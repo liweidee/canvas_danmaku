@@ -112,7 +112,54 @@ abstract final class DmUtils {
       strokeParagraph.dispose();
     }
 
-    canvas.drawParagraph(contentParagraph, offset);
+    // ===== 填充绘制 =====
+    if (content.hasGradient) {
+      // 渐变填充路径：用 shader 重建 paragraph，参照上方描边的实现范式
+      final fillBuilder = ui.ParagraphBuilder(ui.ParagraphStyle(
+        textAlign: TextAlign.left,
+        fontWeight: FontWeight.values[fontWeight],
+        textDirection: TextDirection.ltr,
+        fontFamily: fontFamily,
+        maxLines: 1,
+      ));
+
+      // count 部分用起始色作为单色，避免 shader 作用到小字号上视觉突兀
+      if (content.count case final count?) {
+        fillBuilder
+          ..pushStyle(ui.TextStyle(
+            color: content.gradientStartColor!,
+            fontSize: fontSize * 0.6,
+          ))
+          ..addText('($count)')
+          ..pop();
+      }
+
+      final fillPaint = Paint()
+        ..shader = LinearGradient(
+          colors: [
+            content.gradientStartColor!,
+            content.gradientEndColor!,
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ).createShader(Rect.fromLTWH(0, 0, w, h));
+
+      fillBuilder
+        ..pushStyle(ui.TextStyle(
+          fontSize: fontSize,
+          foreground: fillPaint,
+        ))
+        ..addText(content.text);
+
+      final fillParagraph = fillBuilder.build()
+        ..layout(const ui.ParagraphConstraints(width: double.infinity));
+
+      canvas.drawParagraph(fillParagraph, offset);
+      fillParagraph.dispose();
+    } else {
+      // 单色填充路径（原逻辑，完全不变）
+      canvas.drawParagraph(contentParagraph, offset);
+    }
 
     if (content.selfSend) {
       w += 4;

@@ -24,7 +24,17 @@ class DanmakuContentItem<T> {
   /// 弹幕数量
   final int? count;
 
+  /// 渐变填充起始色（可选，与 gradientEndColor 同时非空时生效）
+  final Color? gradientStartColor;
+
+  /// 渐变填充结束色（可选，与 gradientStartColor 同时非空时生效）
+  final Color? gradientEndColor;
+
   final T? extra;
+
+  /// 是否启用填充渐变
+  bool get hasGradient =>
+      gradientStartColor != null && gradientEndColor != null;
 
   DanmakuContentItem(
     this.text, {
@@ -33,12 +43,14 @@ class DanmakuContentItem<T> {
     this.selfSend = false,
     this.isColorful = false,
     this.count,
+    this.gradientStartColor,
+    this.gradientEndColor,
     this.extra,
   });
 
   @override
   String toString() {
-    return '${objectRuntimeType(this, "DanmakuContentItem<?>")}(text="$text", color=0x${color.toARGB32().toRadixString(16)}, type=${type.name}${count != null ? ", count=$count" : ""}${selfSend ? ", selfSend" : ""}${isColorful ? ", colorful" : ""}${extra != null ? ". extra=$extra" : ""})';
+    return '${objectRuntimeType(this, "DanmakuContentItem<?>")}(text="$text", color=0x${color.toARGB32().toRadixString(16)}, type=${type.name}${count != null ? ", count=$count" : ""}${selfSend ? ", selfSend" : ""}${isColorful ? ", colorful" : ""}${hasGradient ? ", gradient=(${gradientStartColor!.toARGB32().toRadixString(16)}→${gradientEndColor!.toARGB32().toRadixString(16)})" : ""}${extra != null ? ". extra=$extra" : ""})';
   }
 }
 
